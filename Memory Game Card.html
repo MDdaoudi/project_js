@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الذاكرة</title>
+   <style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #24242a;
+        margin: 0;
+    }
+    
+    .game-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 80px);
+        grid-template-rows: repeat(4, 80px);
+        gap: 10px;
+    }
+    
+    .card {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .card img {
+        width: 50px;
+        display: none;
+    }
+    
+    .card.open img {
+        display: block;
+    }
+    h1{
+        color: white;
+        position: absolute;
+        top: 20px;
+    }
+   </style>
+</head>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const grid = document.querySelector(".grid");
+        const icons = [
+            "💎", "💎", "🎵", "🎵", "🌞", "🌞", "🎮", "🎮",
+            "🔷", "🔷", "❤", "❤", "⭐", "⭐", "⚡", "⚡"
+        ];
+    
+        // خلط الرموز عشوائيًا
+        icons.sort(() => 0.5 - Math.random());
+    
+        let selectedCards = [];
+        let matchedCards = [];
+    
+        // إنشاء البطاقات
+        icons.forEach(icon => {
+            const card = document.createElement("div");
+            card.classList.add("card");
+    
+            const iconElement = document.createElement("span");
+            iconElement.innerText = icon;
+            iconElement.style.display = "none"; // إخفاء الرمز في البداية
+    
+            card.appendChild(iconElement);
+            card.addEventListener("click", () => {
+                if (selectedCards.length < 2 && !selectedCards.includes(card) && !matchedCards.includes(card)) {
+                    iconElement.style.display = "block"; // إظهار الرمز عند النقر
+                    selectedCards.push(card);
+                }
+    
+                if (selectedCards.length === 2) {
+                    setTimeout(checkMatch, 500);
+                }
+            });
+    
+            grid.appendChild(card);
+        });
+    
+        function checkMatch() {
+            const [first, second] = selectedCards;
+            if (first.firstChild.innerText === second.firstChild.innerText) {
+                matchedCards.push(first, second);
+            } else {
+                first.firstChild.style.display = "none";
+                second.firstChild.style.display = "none";
+            }
+            selectedCards = [];
+    
+            // التحقق من الفوز
+            if (matchedCards.length === icons.length) {
+                setTimeout(() => {
+                    alert("🎉 مبروك! لقد أكملت اللعبة 🎉");
+                    resetGame(); // إعادة تشغيل اللعبة بعد الفوز
+                }, 500);
+            }
+        }
+    
+        function resetGame() {
+            // إعادة ترتيب البطاقات وإعادة تشغيل اللعبة
+            grid.innerHTML = "";
+            matchedCards = [];
+            selectedCards = [];
+            icons.sort(() => 0.5 - Math.random());
+            icons.forEach(icon => {
+                const card = document.createElement("div");
+                card.classList.add("card");
+    
+                const iconElement = document.createElement("span");
+                iconElement.innerText = icon;
+                iconElement.style.display = "none";
+    
+                card.appendChild(iconElement);
+                card.addEventListener("click", () => {
+                    if (selectedCards.length < 2 && !selectedCards.includes(card) && !matchedCards.includes(card)) {
+                        iconElement.style.display = "block";
+                        selectedCards.push(card);
+                    }
+    
+                    if (selectedCards.length === 2) {
+                        setTimeout(checkMatch, 500);
+                    }
+                });
+    
+                grid.appendChild(card);
+            });
+        }
+    });
+</script>
+<body>
+    <h1>Memory Game Cards</h1>
+    <div class="game-container">
+        <div class="grid"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
