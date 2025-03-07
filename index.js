@@ -1,3 +1,20 @@
+document.addEventListener('DOMContentLoaded', function() {
+    let loadingOverlay = document.querySelector(".loading-overlay");
+    let content = document.querySelector(".le-contenu-main");
+    document.body.classList.add('no-scroll');
+    setTimeout(() => {
+        loadingOverlay.style.opacity = "0";
+        setTimeout(() => {
+            loadingOverlay.style.display = "none";
+            content.style.opacity= "1";
+            document.body.classList.remove('no-scroll');
+        }, 1600);
+    }, 4000);
+}); 
+
+
+
+
 const imageContainerEl = document.querySelector(".image-container");
 
 const prevEl = document.getElementById("prev");

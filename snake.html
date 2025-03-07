@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Serpent - Design Amélioré</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(1deg, #080808f1,#2c2288 ,#8d02f7);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        h1{
+            position: absolute;
+            top: 50px;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            font-size: 50px;
+            color: red;
+        }
+
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background-color: #2c3e50;
+            border: 5px solid #34495e;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .snake-segment {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+            transition: all 0.1s ease;
+        }
+
+        #food {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        #score-display {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            color: #fff;
+            font-size: 20px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            display: none;
+        }
+
+        #restart-button {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.8);
+        }
+
+        #restart-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <div id="game-container">
+        <div id="food"></div>
+        <div id="score-display">Score: 0</div>
+        <div id="game-over">Game Over!</div>
+        <button id="restart-button">Rejouer</button>
+    </div>
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const food = document.getElementById('food');
+        const scoreDisplay = document.getElementById('score-display');
+        const gameOverMessage = document.getElementById('game-over');
+        const restartButton = document.getElementById('restart-button');
+
+        let snakeX = 0;
+        let snakeY = 0;
+        let foodX = 0;
+        let foodY = 0;
+        let direction = 'right';
+        let snakeBody = [{ x: snakeX, y: snakeY }];
+        let score = 0;
+        let gameLoopInterval;
+
+        // Taille de la grille
+        const gridSize = 20;
+        const cellSize = 400 / gridSize;
+
+        // Position initiale de la nourriture
+        placeFood();
+
+        // Dessiner le serpent
+        function drawSnake() {
+            gameContainer.querySelectorAll('.snake-segment').forEach(segment => segment.remove());
+            snakeBody.forEach((segment, index) => {
+                const segmentElement = document.createElement('div');
+                segmentElement.classList.add('snake-segment');
+                segmentElement.style.left = `${segment.x * cellSize}px`;
+                segmentElement.style.top = `${segment.y * cellSize}px`;
+                gameContainer.appendChild(segmentElement);
+            });
+        }
+
+        // Placer la nourriture aléatoirement
+        function placeFood() {
+            foodX = Math.floor(Math.random() * gridSize);
+            foodY = Math.floor(Math.random() * gridSize);
+            food.style.left = `${foodX * cellSize}px`;
+            food.style.top = `${foodY * cellSize}px`;
+        }
+
+        // Vérifier les collisions
+        function checkCollision() {
+            // Collision avec les murs
+            if (snakeX < 0 || snakeX >= gridSize || snakeY < 0 || snakeY >= gridSize) {
+                gameOver();
+            }
+
+            // Collision avec le corps du serpent
+            for (let i = 1; i < snakeBody.length; i++) {
+                if (snakeX === snakeBody[i].x && snakeY === snakeBody[i].y) {
+                    gameOver();
+                }
+            }
+
+            // Collision avec la nourriture
+            if (snakeX === foodX && snakeY === foodY) {
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                placeFood();
+                growSnake();
+            }
+        }
+
+        // Faire grandir le serpent
+        function growSnake() {
+            snakeBody.push({ ...snakeBody[snakeBody.length - 1] });
+        }
+
+        // Game Over
+        function gameOver() {
+            gameOverMessage.style.display = 'block';
+            restartButton.style.display = 'block';
+            clearInterval(gameLoopInterval);
+        }
+
+        // Redémarrer le jeu
+        function restartGame() {
+            snakeX = 0;
+            snakeY = 0;
+            direction = 'right';
+            snakeBody = [{ x: snakeX, y: snakeY }];
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            gameOverMessage.style.display = 'none';
+            restartButton.style.display = 'none';
+            placeFood();
+            drawSnake();
+            gameLoopInterval = setInterval(gameLoop, 100);
+        }
+
+        // Mettre à jour la position du serpent
+        function updateSnake() {
+            // Déplacer le corps du serpent
+            for (let i = snakeBody.length - 1; i > 0; i--) {
+                snakeBody[i] = { ...snakeBody[i - 1] };
+            }
+
+            // Déplacer la tête du serpent
+            if (direction === 'right') snakeX++;
+            if (direction === 'left') snakeX--;
+            if (direction === 'down') snakeY++;
+            if (direction === 'up') snakeY--;
+
+            snakeBody[0] = { x: snakeX, y: snakeY };
+        }
+
+        // Boucle de jeu
+        function gameLoop() {
+            updateSnake();
+            checkCollision();
+            drawSnake();
+        }
+
+        // Contrôles
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' && direction !== 'down') direction = 'up';
+            if (e.key === 'ArrowDown' && direction !== 'up') direction = 'down';
+            if (e.key === 'ArrowLeft' && direction !== 'right') direction = 'left';
+            if (e.key === 'ArrowRight' && direction !== 'left') direction = 'right';
+        });
+
+        // Redémarrer le jeu
+        restartButton.addEventListener('click', restartGame);
+
+        // Démarrer le jeu
+        restartGame();
+    </script>
+</body>
+</html>
